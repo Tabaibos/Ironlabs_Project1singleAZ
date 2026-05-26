@@ -24,7 +24,7 @@ output "bastion_ip" {
   value       = aws_instance.bastion.public_ip
 }
 
-## these 2 dont have a public ip because they are on a private subnet 
+## privat ips to send to bastion for host file configuration
 
 output "app_ip" {
   description = "Public IP addresses of the EC2 instances"
@@ -37,4 +37,7 @@ output "db_ip" {
   value       = aws_instance.testing-bck-joaquim-db.private_ip
 }
 
-
+output "front_ip_priv" {
+  description = "Public IP addresses of the EC2 instances"
+  value       = aws_instance.testing-front-joaquim.private_ip
+}

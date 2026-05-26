@@ -1,0 +1,5 @@
+[bastion]
+bastion  ansible_host=$[BASTION_IP] ansible_user=ubuntu ansible_private_key_file=/path/to/my_key.pem
+ 
+[upstream_server]
+upstream ansible_host=<upstream_server_ip_or_dns> ansible_user=ubuntu ansible_private_key_file=/path/to/my_key.pem

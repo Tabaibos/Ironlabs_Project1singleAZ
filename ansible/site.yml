@@ -1,0 +1,37 @@
+- name: Update apt package index
+  ansible.builtin.apt:
+    update_cache: yes
+
+
+- name: Update apt package index
+  hosts: all
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: install 
+  hosts: all
+  ansible.builtin.apt:
+    update_cache: yes
+
+
+- name: Install Docker if not present
+  hosts: all
+  ansible.builtin.package:
+    name: docker.io
+    state: present
+
+- name: Pull Docker Image
+  hosts: all
+  docker_image:
+    name: <your-dockerhub-username>/vote
+    source: pull
+    tag: latest
+
+- name: Run Container
+  hosts: all
+  docker_container:
+    name: client
+    image: <your-dockerhub-username>/client:latest # Change!
+    ports:
+      - "80:80" # port mappings
+    state: started

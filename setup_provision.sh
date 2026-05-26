@@ -15,7 +15,15 @@ set -euo pipefail
 ############## add to the machines sgs allow ssh from bastion, bastion can not connect to any machine ====>> adicionado como ingress aos sg o sg_bastion voltar a correr
 ############## provision in bastion to install ansible so that when exporting in this script, it just runs ansible
 ###-----------------------------------------------------------------------------
-
+echo "=== DEBUG AMBIENTE ==="
+echo "PWD: $(pwd)"
+echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-não definido}"
+echo "AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-não definido}"
+echo "PATH: $PATH"
+which terraform
+which aws
+aws sts get-caller-identity
+echo "======================"
 # 1. Provision with Terraform
 cd terraform
 
@@ -26,7 +34,7 @@ TF_OUTPUT_JSON=$(terraform output -json)          # capture outputs
 #outputs that needs to catch ips + key 
 
 BASTION_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.bastion_ip.value')
-FRONTEND_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.front_ip.value')
+FRONTEND_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.front_ip_priv.value')
 APP_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.app_ip.value')
 DATABASE_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.db_ip.value')
 ##KEY_PATH=$(echo "$TF_OUTPUT_JSON"     | jq -r '.key_path.value')
@@ -63,7 +71,7 @@ ANSIBLE_CFG=$(mktemp --suffix=.cfg)
 
 cat > "$ANSIBLE_CFG" <<EOF
 [defaults]
-inventory = ${INV_FILE}
+inventory = "/home/ubuntu/inventory"
 host_key_checking = False
 EOF
 
@@ -73,8 +81,6 @@ echo "=== INV_FILE ($INV_FILE) ==="
 cat "$INV_FILE"
 echo "=== ANSIBLE_CFG ($ANSIBLE_CFG) ===" #=== ANSIBLE_CFG (/tmp/tmp.c3WZlY7dAw) === ANSIBLE_CFG was used as a env variable instead of file, therefore when exporting in line 30 error was given  
 cat "$ANSIBLE_CFG"
-
-cd ansible
 
 
 ##send to bation the host file, the ansible.cfg file and the playbook

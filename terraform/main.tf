@@ -114,18 +114,9 @@ resource "aws_security_group" "sg_joaquim_front" {
   name        = "sg_joaquim_front_p1"
   description = "Allow SSH access from my IP and allow HTTP from all"
   vpc_id      = aws_vpc.vpc_joaquim.id
-  depends_on  = [aws_security_group.sg_joaquim_front]
 
   ingress {
     description = "SSH from my ip"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.myIP] # defined in tfvars
-  }
-
-  ingress {
-    description = "SSH from bastion"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -166,7 +157,7 @@ resource "aws_security_group" "sg_joaquim_bck_app" {
   name        = "sg_joaquim_bck_app"
   description = "Allow SSH access from my IP and allow HTTP from all"
   vpc_id      = aws_vpc.vpc_joaquim.id
-  depends_on  = [aws_security_group.sg_joaquim_front]
+  depends_on  = [aws_security_group.sg_bastion]
 
   ingress {
     description = "SSH from my ip" #for testing purposes
@@ -174,14 +165,6 @@ resource "aws_security_group" "sg_joaquim_bck_app" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.myIP] # defined in tfvars
-  }
-
-  ingress {
-    description     = "ssh from sg_joaquim_front "
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.sg_joaquim_front.id]
   }
 
   ingress {
@@ -234,7 +217,7 @@ resource "aws_security_group" "sg_joaquim_bck_db" {
   name        = "sg_joaquim_bck_db"
   description = "Allow SSH access from my IP and allow HTTP from all"
   vpc_id      = aws_vpc.vpc_joaquim.id
-  depends_on  = [aws_security_group.sg_joaquim_front, aws_security_group.sg_joaquim_bck_app]
+  depends_on  = [aws_security_group.sg_joaquim_bck_app, aws_security_group.sg_bastion]
 
   ingress {
     description = "SSH from my ip" #for testing purposes
@@ -254,8 +237,8 @@ resource "aws_security_group" "sg_joaquim_bck_db" {
 
   ingress {
     description     = "ssh from sg_joaquim_bck_app"
-    from_port       = 22
-    to_port         = 22
+    from_port       = 5432
+    to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.sg_joaquim_bck_app.id]
   }

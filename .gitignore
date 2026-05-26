@@ -1,0 +1,27 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Variáveis potencialmente sensíveis
+*.tfvars
+*.tfvars.json
+
+# Overrides
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI config local
+.terraformrc
+terraform.rc
+
+# Editor/OS (opcional)
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

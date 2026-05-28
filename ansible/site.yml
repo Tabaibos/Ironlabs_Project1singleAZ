@@ -13,9 +13,9 @@
 
 - name: Installing docker
   hosts: all
+  become: yes
   tasks:
     - name: Update apt cache
       ansible.builtin.apt:
         name: docker.io
-        state: present
- 
+        state: present 

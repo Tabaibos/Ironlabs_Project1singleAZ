@@ -83,10 +83,22 @@ cat > "$ANSIBLE_CFG" <<EOF
 [defaults]
 inventory = "/home/ubuntu/inventory"
 host_key_checking = False
+
+[privilege_escalation]
+become = True
+become_method = sudo
+become_user = root
 EOF
 
 # running with local agent ssh-agent
 eval $(ssh-agent -s)
 ssh-add "$KEY"
+
+echo "=== INV_FILE (${INV_FILE}) ==="
+cat "$INV_FILE"
+echo ""
+echo "=== ANSIBLE_CFG (${ANSIBLE_CFG}) ==="
+cat "$ANSIBLE_CFG"
+echo ""
 
 ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/site.yml

@@ -15,6 +15,8 @@ set -euo pipefail
 ############## add to the machines sgs allow ssh from bastion, bastion can not connect to any machine ====>> adicionado como ingress aos sg o sg_bastion voltar a correr
 ############## provision in bastion to install ansible so that when exporting in this script, it just runs ansible
 ###-----------------------------------------------------------------------------
+export PATH=/usr/local/bin:/usr/bin:/snap/bin:$PATH
+
 echo "=== DEBUG AMBIENTE ==="
 echo "PWD: $(pwd)"
 echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-não definido}"
@@ -25,7 +27,8 @@ which aws
 aws sts get-caller-identity
 echo "======================"
 # 1. Provision with Terraform
-cd terraform
+cd ~/Project1_singleAZ/terraform
+
 
 ## TO DO: find a way to not log directly in terminal, but save it in a file of sorts 
 terraform init -upgrade
@@ -33,10 +36,14 @@ terraform apply -auto-approve
 TF_OUTPUT_JSON=$(terraform output -json)          # capture outputs 
 #outputs that needs to catch ips + key 
 
+echo "---------Terraform finished : Infra created ---------------------------"
+
 BASTION_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.bastion_ip.value')
 FRONTEND_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.front_ip_priv.value')
 APP_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.app_ip.value')
 DATABASE_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.db_ip.value')
+#KEY=$(echo "$TF_OUTPUT_JSON" | jq -r '.key_path.value')
+KEY="$HOME/joaquim-labsg-key.pem"
 ##KEY_PATH=$(echo "$TF_OUTPUT_JSON"     | jq -r '.key_path.value')
 
 echo "=== DEBUG TF OUTPUTS ==="
@@ -52,18 +59,21 @@ cd ..
 #### creating host files 
 
 INV_FILE=$(mktemp)
+CMD_SSH_BASTION="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"
 cat > "$INV_FILE" <<EOF
 
-[bastion]
-bastion  ansible_host=${BASTION_IP} ansible_user=ubuntu ansible_private_key_file=/path/to/my_key.pem
-
 [frontend]
-frontend  ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_file=/path/to/my_key.pem
+frontend  ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}
 
 [backend]
-app ansible_host=${APP_IP} ansible_user=ubuntu ansible_private_key_file=/path/to/my_key.pem
-db ansible_host=${DATABASE_IP} ansible_user=ubuntu ansible_private_key_file=/path/to/my_key.pem
+app ansible_host=${APP_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}
+db ansible_host=${DATABASE_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}
 
+[frontend:vars]
+ansible_ssh_common_args= '-o ProxyCommand="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"'
+
+[backend:vars]
+ansible_ssh_common_args= '-o ProxyCommand="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"'
 EOF
 
 ANSIBLE_CFG=$(mktemp --suffix=.cfg)
@@ -73,19 +83,22 @@ cat > "$ANSIBLE_CFG" <<EOF
 [defaults]
 inventory = "/home/ubuntu/inventory"
 host_key_checking = False
+
+[privilege_escalation]
+become = True
+become_method = sudo
+become_user = root
 EOF
 
+# running with local agent ssh-agent
+eval $(ssh-agent -s)
+ssh-add "$KEY"
 
-#debugging
-echo "=== INV_FILE ($INV_FILE) ==="
+echo "=== INV_FILE (${INV_FILE}) ==="
 cat "$INV_FILE"
-echo "=== ANSIBLE_CFG ($ANSIBLE_CFG) ===" #=== ANSIBLE_CFG (/tmp/tmp.c3WZlY7dAw) === ANSIBLE_CFG was used as a env variable instead of file, therefore when exporting in line 30 error was given  
+echo ""
+echo "=== ANSIBLE_CFG (${ANSIBLE_CFG}) ==="
 cat "$ANSIBLE_CFG"
+echo ""
 
-
-##send to bation the host file, the ansible.cfg file and the playbook
-scp -i ~/joaquim-labsg-key.pem $INV_FILE ubuntu@${BASTION_IP}:/home/ubuntu/inventory
-scp -i ~/joaquim-labsg-key.pem "$ANSIBLE_CFG" ubuntu@${BASTION_IP}:/home/ubuntu/ansible.cfg
-scp -i ~/joaquim-labsg-key.pem ansible/site.yml ubuntu@${BASTION_IP}:/home/ubuntu/site.yml
-scp -i ~/joaquim-labsg-key.pem ~/joaquim-labsg-key.pem ubuntu@${BASTION_IP}:/home/ubuntu/
-
+ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/site.yml

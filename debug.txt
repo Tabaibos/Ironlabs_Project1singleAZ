@@ -1,0 +1,25 @@
+Current error 
+
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+fatal: [app]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Connection timed out during banner exchange\r\nConnection to UNKNOWN port 65535 timed out", "unreachable": true}
+fatal: [frontend]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Connection timed out during banner exchange\r\nConnection to UNKNOWN port 65535 timed out", "unreachable": true}
+ok: [db]
+
+TASK [Ping all servers to check connectivity] ************************************************************************************************************************************************
+ok: [db]
+
+PLAY [Update apt package index] **************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***********************************************************************************************************************************************************************
+ok: [db]
+
+TASK [installing docker] *********************************************************************************************************************************************************************
+fatal: [db]: FAILED! => {"changed": false, "msg": "Failed to lock apt for exclusive operation: Failed to lock directory /var/lib/apt/lists/: E:Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)"}
+
+PLAY [Installing docker] *********************************************************************************************************************************************************************
+
+PLAY RECAP ***********************************************************************************************************************************************************************************
+app                        : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+db                         : ok=3    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+frontend                   : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   

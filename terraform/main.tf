@@ -311,6 +311,21 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids = [aws_security_group.sg_bastion.id]
   subnet_id              = aws_subnet.public_subnet-joaquim.id
 
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("~/${var.key_name}.pem")
+    host        = self.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update -y",
+      "sudo apt install software-properties-common",
+      "sudo add-apt-repository --yes --update ppa:ansible/ansible",
+      "sudo apt install ansible --yes"
+    ]
+  }  
   tags = {
     Name = "joaquim-P1-bastion"
   }

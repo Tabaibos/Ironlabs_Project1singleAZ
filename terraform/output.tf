@@ -41,3 +41,7 @@ output "front_ip_priv" {
   description = "Public IP addresses of the EC2 instances"
   value       = aws_instance.testing-front-joaquim.private_ip
 }
+
+output "key_path" {
+  value = "~/${var.key_name}.pem"
+}

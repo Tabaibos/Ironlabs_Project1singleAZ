@@ -1,15 +1,10 @@
+---
+# tasks file for roles/common
 - name: Ping all Servers
   hosts: all
   tasks:
     - name: Ping all servers to check connectivity
       ansible.builtin.ping:
-
-- name: Update apt package index
-  hosts: all
-  tasks:
-    - name: installing docker
-      ansible.builtin.apt:
-        update_cache: yes
 
 - name: Installing docker
   hosts: all
@@ -19,3 +14,9 @@
       ansible.builtin.apt:
         name: docker.io
         state: present 
+
+- name: Installing docker compose
+sudo usermod -aG docker $USER
+
+
+- name: Logging in docker

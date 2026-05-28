@@ -101,4 +101,4 @@ echo "=== ANSIBLE_CFG (${ANSIBLE_CFG}) ==="
 cat "$ANSIBLE_CFG"
 echo ""
 
-ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/site.yml
+ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/bootstrap.yml

@@ -48,9 +48,10 @@
 
     # Add Docker's official GPG key to verify package integrity
     - name: Add Docker GPG apt Key
-      ansible.builtin.apt_key:
+      ansible.builtin.get_url:
         url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
 
     # Register the official Docker APT repository as a package source
     - name: Add Docker Repository

@@ -1,0 +1,15 @@
+# Ironhack note - This file is for running in docker compose with prebuilt images
+# Use these if you're stuck, or if you want to start slowly migrating from external images into your own.
+
+services:
+  vote:
+    image: dockersamples/examplevotingapp_vote
+    ports:
+      - "8080:80"
+
+
+  result:
+    image: dockersamples/examplevotingapp_result
+    ports:
+      - "8081:80"
+

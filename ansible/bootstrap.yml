@@ -43,20 +43,31 @@
           - python3-pip
           - virtualenv
           - python3-setuptools
+          - git
         state: latest
         update_cache: true
 
     # Add Docker's official GPG key to verify package integrity
-    - name: Add Docker GPG apt Key
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        dest: /etc/apt/keyrings/docker.asc
+    - name: Create keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker GPG key
+      ansible.builtin.shell:
+        cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Set permissions on Docker GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/docker.gpg
         mode: '0644'
 
     # Register the official Docker APT repository as a package source
     - name: Add Docker Repository
       ansible.builtin.apt_repository:
-        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable"
         state: present
 
     # Install the Docker CE package from the Docker repository
@@ -75,8 +86,8 @@
 
     # Install the Python Docker SDK so Ansible can communicate with Docker
     - name: Install Docker SDK for Python
-      ansible.builtin.pip:
-        name: docker
+      ansible.builtin.apt:
+        name: python3-docker
         state: present
 
     # Add the remote user to the docker group so it can run docker without sudo
@@ -92,3 +103,6 @@
         name: docker
         state: started
         enabled: true
+
+## cloning git repo 
+

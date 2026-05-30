@@ -1,4 +1,110 @@
+TROUBLESHOOTING STEPS
+###############################################
+Ansible: installing docker (from docker itself)  /though https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-22-04 (from docker itself) 
+
 ASK [Add Docker Repository] ********************************************************
 fatal: [app]: FAILED! => {"changed": false, "msg": "Failed to update apt cache: W:Updating from such a repository can't be done securely, and is therefore disabled by default., W:See apt-secure(8) manpage for repository creation and user configuration details., W:OpenPGP signature verification failed: https://download.docker.com/linux/ubuntu jammy InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 7EA0A9C3F273FCD8, E:The repository 'https://download.docker.com/linux/ubuntu jammy InRelease' is not signed."}
 fatal: [frontend]: FAILED! => {"changed": false, "msg": "Failed to update apt cache: W:Updating from such a repository can't be done securely, and is therefore disabled by default., W:See apt-secure(8) manpage for repository creation and user configuration details., W:OpenPGP signature verification failed: https://download.docker.com/linux/ubuntu jammy InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 7EA0A9C3F273FCD8, E:The repository 'https://download.docker.com/linux/ubuntu jammy InRelease' is not signed."}
 fatal: [db]: FAILED! => {"changed": false, "msg": "Failed to update apt cache: W:Updating from such a repository can't be done securely, and is therefore disabled by default., W:See apt-secure(8) manpage for repository creation and user configuration details., W:OpenPGP signature verification failed: https://download.docker.com/linux/ubuntu jammy InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 7EA0A9C3F273FCD8, E:The repository 'https://download.docker.com/linux/ubuntu jammy InRelease' is not signed."}
+
+Error was on installing the Docker GPG APT key and then use it to add the docker repository.
+Plan: ". On Ubuntu and later, the preferred approach stores the GPG key as a binary armored file under /etc/apt/keyrings" Therefore, i need to create gpg key, add necessary permissions and use it to add docker repository
+
+
+###############################################
+Ansible: installing docker (from docker itself)
+
+fatal: [frontend]: FAILED! => {"changed": false, "cmd": ["/usr/bin/python3", "-m", "pip.__main__", "install", "docker"], "msg": "\n:stderr: error: externally-managed-environment\n\n× This environment is externally managed\n╰─> To install Python packages system-wide, try apt install\n    python3-xyz, where xyz is the package you are trying to\n    install.\n    \n    If you wish to install a non-Debian-packaged Python package,\n    create a virtual environment using python3 -m venv path/to/venv.\n    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make\n    sure you have python3-full installed.\n    \n    If you wish to install a non-Debian packaged Python application,\n    it may be easiest to use pipx install xyz, which will manage a\n    virtual environment for you. Make sure you have pipx installed.\n    \n    See /usr/share/doc/python3.14/README.venv for more information.\n\nnote: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.\nhint: See PEP 668 for the detailed specification.\n"}
+fatal: [db]: FAILED! => {"changed": false, "cmd": ["/usr/bin/python3", "-m", "pip.__main__", "install", "docker"], "msg": "\n:stderr: error: externally-managed-environment\n\n× This environment is externally managed\n╰─> To install Python packages system-wide, try apt install\n    python3-xyz, where xyz is the package you are trying to\n    install.\n    \n    If you wish to install a non-Debian-packaged Python package,\n    create a virtual environment using python3 -m venv path/to/venv.\n    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make\n    sure you have python3-full installed.\n    \n    If you wish to install a non-Debian packaged Python application,\n    it may be easiest to use pipx install xyz, which will manage a\n    virtual environment for you. Make sure you have pipx installed.\n    \n    See /usr/share/doc/python3.14/README.venv for more information.\n\nnote: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.\nhint: See PEP 668 for the detailed specification.\n"}
+fatal: [app]: FAILED! => {"changed": false, "cmd": ["/usr/bin/python3", "-m", "pip.__main__", "install", "docker"], "msg": "\n:stderr: error: externally-managed-environment\n\n× This environment is externally managed\n╰─> To install Python packages system-wide, try apt install\n    python3-xyz, where xyz is the package you are trying to\n    install.\n    \n    If you wish to install a non-Debian-packaged Python package,\n    create a virtual environment using python3 -m venv path/to/venv.\n    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make\n    sure you have python3-full installed.\n    \n    If you wish to install a non-Debian packaged Python application,\n    it may be easiest to use pipx install xyz, which will manage a\n    virtual environment for you. Make sure you have pipx installed.\n    \n    See /usr/share/doc/python3.14/README.venv for more information.\n\nnote: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.\nhint: See PEP 668 for the detailed specification.\n"}
+
+Plan: change from pip to apt, maybe it solves for the .env variables and is internal to ubuntu, found package in ubuntu python3-docker
+https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=python3+docker&searchon=names 
+
+Testing accessing app instance
+State: OK 
+ubuntu@ip-10-0-0-7:~$ docker --version
+Docker version 29.5.2, build 79eb04c
+ubuntu@ip-10-0-0-7:~$ docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+4f55086f7dd0: Pull complete 
+d5e71e642bf5: Download complete 
+Digest: sha256:0e760fdfbc48ba8041e7c6db999bb40bfca508b4be580ac75d32c4e29d202ce1
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+
+###############################################
+
+testing docker 
+
+TASK [Composing containers in front] **********************************************************************************************************************************************************
+fatal: [frontend]: FAILED! => {"changed": true, "cmd": ["docker", "compose", "docker-compose.front.yml", "up", "-d"], "delta": "0:00:00.067445", "end": "2026-05-30 10:31:23.035311", "msg": "non-zero return code", "rc": 1, "start": "2026-05-30 10:31:22.967866", "stderr": "unknown docker command: \"compose docker-compose.front.yml\"", "stderr_lines": ["unknown docker command: \"compose docker-compose.front.yml\""], "stdout": "Usage:  docker compose [OPTIONS] COMMAND\n\nDefine and run multi-container applications with Docker\n\nOptions:\n      --all-resources              Include all resources, even those not used by services\n      --ansi string                Control when to print ANSI control characters (\"never\"|\"always\"|\"auto\") (default \"auto\")\n      --compatibility              Run compose in backward compatibility mode\n      --dry-run                    Execute command in dry run mode\n      --env-file stringArray       Specify an alternate environment file\n  -f, --file stringArray           Compose configuration files\n      --parallel int               Control max parallelism, -1 for unlimited (default -1)\n      --profile stringArray        Specify a profile to enable\n      --progress string            Set type of progress output (auto, tty, plain, json, quiet)\n      --project-directory string   Specify an alternate working directory\n                (default: the path of the, first specified, Compose file)\n  -p, --project-name string        Project name\n\nManagement Commands:\n  bridge                  Convert compose files into another model\n\nCommands:\n  attach                  Attach local standard input, output, and error streams to a service's running container\n  build                   Build or rebuild services\n  commit                  Create a new image from a service container's changes\n  config                  Parse, resolve and render compose file in canonical format\n  cp                      Copy files/folders between a service container and the local filesystem\n  create                  Creates containers for a service\n  down                    Stop and remove containers, networks\n  events                  Receive real time events from containers\n  exec                    Execute a command in a running container\n  export                  Export a service container's filesystem as a tar archive\n  images                  List images used by the created containers\n  kill                    Force stop service containers\n  logs                    View output from containers\n  ls                      List running compose projects\n  pause                   Pause services\n  port                    Print the public port for a port binding\n  ps                      List containers\n  publish                 Publish compose application\n  pull                    Pull service images\n  push                    Push service images\n  restart                 Restart service containers\n  rm                      Removes stopped service containers\n  run                     Run a one-off command on a service\n  scale                   Scale services \n  start                   Start services\n  stats                   Display a live stream of container(s) resource usage statistics\n  stop                    Stop services\n  top                     Display the running processes\n  unpause                 Unpause services\n  up                      Create and start containers\n  version                 Show the Docker Compose version information\n  volumes                 List volumes\n  wait                    Block until containers of all (or specified) services stop.\n  watch                   Watch build context for service and rebuild/refresh containers when files are updated\n\nRun 'docker compose COMMAND --help' for more information on a command.", "stdout_lines": ["Usage:  docker compose [OPTIONS] COMMAND", "", "Define and run multi-container applications with Docker", "", "Options:", "      --all-resources              Include all resources, even those not used by services", "      --ansi string                Control when to print ANSI control characters (\"never\"|\"always\"|\"auto\") (default \"auto\")", "      --compatibility              Run compose in backward compatibility mode", "      --dry-run                    Execute command in dry run mode", "      --env-file stringArray       Specify an alternate environment file", "  -f, --file stringArray           Compose configuration files", "      --parallel int               Control max parallelism, -1 for unlimited (default -1)", "      --profile stringArray        Specify a profile to enable", "      --progress string            Set type of progress output (auto, tty, plain, json, quiet)", "      --project-directory string   Specify an alternate working directory", "                (default: the path of the, first specified, Compose file)", "  -p, --project-name string        Project name", "", "Management Commands:", "  bridge                  Convert compose files into another model", "", "Commands:", "  attach                  Attach local standard input, output, and error streams to a service's running container", "  build                   Build or rebuild services", "  commit                  Create a new image from a service container's changes", "  config                  Parse, resolve and render compose file in canonical format", "  cp                      Copy files/folders between a service container and the local filesystem", "  create                  Creates containers for a service", "  down                    Stop and remove containers, networks", "  events                  Receive real time events from containers", "  exec                    Execute a command in a running container", "  export                  Export a service container's filesystem as a tar archive", "  images                  List images used by the created containers", "  kill                    Force stop service containers", "  logs                    View output from containers", "  ls                      List running compose projects", "  pause                   Pause services", "  port                    Print the public port for a port binding", "  ps                      List containers", "  publish                 Publish compose application", "  pull                    Pull service images", "  push                    Push service images", "  restart                 Restart service containers", "  rm                      Removes stopped service containers", "  run                     Run a one-off command on a service", "  scale                   Scale services ", "  start                   Start services", "  stats                   Display a live stream of container(s) resource usage statistics", "  stop                    Stop services", "  top                     Display the running processes", "  unpause                 Unpause services", "  up                      Create and start containers", "  version                 Show the Docker Compose version information", "  volumes                 List volumes", "  wait                    Block until containers of all (or specified) services stop.", "  watch                   Watch build context for service and rebuild/refresh containers when files are updated", "", "Run 'docker compose COMMAND --help' for more information on a command."]}
+
+PLAY RECAP ************************************************************************************************************************************************************************************
+frontend                   : ok=2    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
+
+remove specific file 
+
+PLAY [Configure Database] *********************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************************************************************************
+ok: [db]
+
+TASK [Create db-data volume] ******************************************************************************************************************************************************************
+changed: [db]
+
+TASK [Run PostgreSQL container] ***************************************************************************************************************************************************************
+fatal: [db]: FAILED! => {"changed": false, "msg": "Error connecting: Error while fetching server API version: Not supported URL scheme http+docker"}
+
+trying to replace docker_container and doker_volume with shell commands, http+docker
+
+#############################################3
+Containers are up and running
+
+app host
+ubuntu@ip-10-0-0-224:~$ docker ps
+CONTAINER ID   IMAGE                                   COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+aa95779d5227   redis:alpine                            "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp   ubuntu-redis-1
+97a2ef303e3a   dockersamples/examplevotingapp_worker   "dotnet Worker.dll"      3 minutes ago   Up 3 minutes   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp       ubuntu-worker-1
+
+front end
+ubuntu@ip-10-0-1-92:~$ docker ps
+CONTAINER ID   IMAGE                                   COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+3789cb062e8d   dockersamples/examplevotingapp_vote     "gunicorn app:app -b…"   4 minutes ago   Up 4 minutes   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   ubuntu-vote-1
+b86f69d77cf8   dockersamples/examplevotingapp_result   "/usr/bin/tini -- no…"   4 minutes ago   Up 4 minutes   0.0.0.0:8081->80/tcp, [::]:8081->80/tcp   ubuntu-result-1
+
+db host 
+CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS      NAMES
+eac3fd298cfc   postgres:15-alpine   "docker-entrypoint.s…"   6 minutes ago   Up 6 minutes   5432/tcp   db
+
+
+##########################33
+Running the right container:
+    -> Need to create my own images to plug them into the yml
+
+Check connections between all Ec2s using telnet (maybe employing a test)
+
+

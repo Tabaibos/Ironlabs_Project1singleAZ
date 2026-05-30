@@ -67,6 +67,8 @@ frontend  ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_fi
 
 [backend]
 app ansible_host=${APP_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}
+
+[database]
 db ansible_host=${DATABASE_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}
 
 [frontend:vars]
@@ -74,6 +76,10 @@ ansible_ssh_common_args= '-o ProxyCommand="ssh -i ${KEY} -W %h:%p -q ubuntu@${BA
 
 [backend:vars]
 ansible_ssh_common_args= '-o ProxyCommand="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"'
+
+[database:vars]
+ansible_ssh_common_args= '-o ProxyCommand="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"'
+
 EOF
 
 ANSIBLE_CFG=$(mktemp --suffix=.cfg)
@@ -83,6 +89,7 @@ cat > "$ANSIBLE_CFG" <<EOF
 [defaults]
 inventory = "/home/ubuntu/inventory"
 host_key_checking = False
+ANSIBLE_HOST_KEY_CHECKING = False
 
 [privilege_escalation]
 become = True
@@ -102,3 +109,18 @@ cat "$ANSIBLE_CFG"
 echo ""
 
 ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/bootstrap.yml
+
+#for manual debugging purposes at first try
+#scp -i ~/joaquim-labsg-key.pem ~/joaquim-labsg-key.pem ubuntu@${BASTION_IP}:/home/ubuntu
+
+echo "=== Setting up container for db ==="
+ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/docker_db.yml
+
+echo "=== Setting up container for back host ==="
+ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/docker_back.yml
+
+echo "=== Setting up container for front host ==="
+ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/docker_front.yml
+
+
+

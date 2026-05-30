@@ -1,0 +1,108 @@
+---
+#### apt update 
+
+- name: Update apt package index
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+
+
+### check to see if all ec2 instances are available and connectable to bastion
+
+- name: Ping all servers
+  hosts: all
+  tasks:
+    - name: Ping all servers to check connectivity
+      ansible.builtin.ping:
+
+## instaling docker and all dependencies used this as reference https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-22-04
+
+- name: Install Docker and dependencies
+  hosts: all
+  become: true
+
+  tasks:
+    # Install aptitude so Ansible can manage packages more reliably
+    - name: Install aptitude
+      ansible.builtin.apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    # Install packages required before Docker can be added
+    - name: Install required system packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - git
+        state: latest
+        update_cache: true
+
+    # Add Docker's official GPG key to verify package integrity
+    - name: Create keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Add Docker GPG key
+      ansible.builtin.shell:
+        cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Set permissions on Docker GPG key
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/docker.gpg
+        mode: '0644'
+
+    # Register the official Docker APT repository as a package source
+    - name: Add Docker Repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable"
+        state: present
+
+    # Install the Docker CE package from the Docker repository
+    - name: Install docker-ce
+      ansible.builtin.apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    # Install Docker Compose v2 as an APT plugin (replaces standalone binary)
+    - name: Install Docker Compose plugin
+      ansible.builtin.apt:
+        name: docker-compose-plugin
+        state: latest
+        update_cache: true
+
+    # Install the Python Docker SDK so Ansible can communicate with Docker
+    - name: Install Docker SDK for Python
+      ansible.builtin.apt:
+        name: python3-docker
+        state: present
+
+    # Add the remote user to the docker group so it can run docker without sudo
+    - name: Add user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    # Ensure Docker service is running and enabled on boot
+    - name: Start and enable Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+## cloning git repo 
+

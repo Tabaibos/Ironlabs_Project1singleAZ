@@ -1,0 +1,36 @@
+---
+#### apt update 
+
+- name: Update apt package index
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+
+
+### check to see if all ec2 instances are available and connectable to bastion
+
+- name: Ping all servers
+  hosts: all
+  tasks:
+    - name: Ping all servers to check connectivity
+      ansible.builtin.ping:
+
+## instaling docker and all dependencies used this as reference https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-22-04
+
+- name: Update apt package index
+  ansible.builtin.apt:
+    update_cache: yes
+ 
+- name: Install Docker if not present
+  ansible.builtin.package:
+    name: docker.io
+    state: present
+
+- name: Install docker-compose
+  get_url:
+    url: https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'

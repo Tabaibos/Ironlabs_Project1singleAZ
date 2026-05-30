@@ -1,0 +1,15 @@
+4 Roles:
+
+Common: every thing that all servers need, apt update, docker, docker compose
+app: redis+worker docker compose
+    has to do: docker pull, docker compose, 
+
+    tasks:
+    especificar o folder
+    docker compose
+
+front: docker compose vote and result
+    has to do: docker run 
+
+database: posgres
+    has to do: docker run +volume

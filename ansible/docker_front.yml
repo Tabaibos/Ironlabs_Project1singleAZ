@@ -1,0 +1,16 @@
+---
+
+- name: Docker in front
+  hosts: frontend
+  become: true
+  tasks:
+    - name: Copying compose file 
+      copy: 
+        src: compose/docker-compose.front.yml
+        dest: /home/ubuntu/docker-compose.front.yml
+        owner: ubuntu 
+        group: ubuntu
+        mode: '0644'
+
+    - name: Composing containers in front
+      command: docker compose -f docker-compose.front.yml up -d 

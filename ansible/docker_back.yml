@@ -1,0 +1,15 @@
+
+- name: Docker in back
+  hosts: app
+  become: true
+  tasks:
+    - name: Copying compose file 
+      copy: 
+        src: compose/docker-compose.back.yml
+        dest: /home/ubuntu/docker-compose.back.yml
+        owner: ubuntu 
+        group: ubuntu
+        mode: '0644'
+
+    - name: Composing containers in back
+      command: docker compose -f docker-compose.back.yml up -d 

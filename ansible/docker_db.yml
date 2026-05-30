@@ -1,0 +1,24 @@
+---
+- name: Configure Database
+  hosts: db
+  become: yes
+
+  tasks:
+
+   - name: Remove existing db container if exists
+     ansible.builtin.shell:
+      cmd: docker rm -f db || true
+
+   - name: Create db-data volume
+     ansible.builtin.shell:
+      cmd: docker volume create db-data
+
+   - name: Run PostgreSQL container
+     ansible.builtin.shell:
+      cmd: >         
+          docker run -d
+          --name db
+          -e POSTGRES_USER=postgres
+          -e POSTGRES_PASSWORD=postgres
+          -v db-data:/var/lib/postgresql/data
+          postgres:15-alpine

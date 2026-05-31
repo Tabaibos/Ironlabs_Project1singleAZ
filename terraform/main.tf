@@ -116,14 +116,6 @@ resource "aws_security_group" "sg_joaquim_front" {
   vpc_id      = aws_vpc.vpc_joaquim.id
 
   ingress {
-    description = "SSH from my ip"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.myIP] # defined in tfvars
-  }
-
-  ingress {
     description     = "ssh from sg_bastion"
     from_port       = 22
     to_port         = 22
@@ -136,6 +128,14 @@ resource "aws_security_group" "sg_joaquim_front" {
     description = "HTTP from anywhere"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "App ports"
+    from_port   = 8080
+    to_port     = 8081
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -160,19 +160,20 @@ resource "aws_security_group" "sg_joaquim_bck_app" {
   depends_on  = [aws_security_group.sg_bastion]
 
   ingress {
-    description = "SSH from my ip" #for testing purposes
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.myIP] # defined in tfvars
-  }
-
-  ingress {
     description     = "ssh from sg_bastion"
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
     security_groups = [aws_security_group.sg_bastion.id]
+  }
+
+  ingress {
+    description     = "allow redis from frontend"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_joaquim_front.id]
+
   }
 
   egress {
@@ -220,23 +221,15 @@ resource "aws_security_group" "sg_joaquim_bck_db" {
   depends_on  = [aws_security_group.sg_joaquim_bck_app, aws_security_group.sg_bastion]
 
   ingress {
-    description = "SSH from my ip" #for testing purposes
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.myIP] # defined in tfvars
-  }
-
-  ingress {
-    description     = "ssh from sg_joaquim_front"
-    from_port       = 22
-    to_port         = 22
+    description     = "allow bd connection from frontend host"
+    from_port       = 5432
+    to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.sg_joaquim_front.id]
   }
 
   ingress {
-    description     = "ssh from sg_joaquim_bck_app"
+    description     = "allow bd connection from backend host"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
@@ -325,7 +318,7 @@ resource "aws_instance" "bastion" {
       "sudo add-apt-repository --yes --update ppa:ansible/ansible",
       "sudo apt install ansible --yes"
     ]
-  }  
+  }
   tags = {
     Name = "joaquim-P1-bastion"
   }

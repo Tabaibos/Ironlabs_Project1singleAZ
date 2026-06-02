@@ -28,3 +28,6 @@ Thumbs.db
 
 .aws/*
 terraform/aws/"
+
+aws/*
+awscliv2.zip

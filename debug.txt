@@ -107,4 +107,154 @@ Running the right container:
 
 Check connections between all Ec2s using telnet (maybe employing a test)
 
+###########
+public instance port8080 and 8081 were not accessable, had to change sg
 
+##################
+ISSUE: results are not updating after vote
+
+Solve: Need to add enviroment variables in docker compose 
+
+docker logs of vote app
+
+Timmeout to connect to REDIS
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1014, in connect_check_health
+    raise e
+redis.exceptions.TimeoutError: Timeout connecting to server
+85.247.146.215 - - [30/May/2026:23:41:40 +0000] "POST / HTTP/1.1" 500 265 "http://44.214.137.40:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0"
+[2026-05-30 23:41:48,075] ERROR in app: Exception on / [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1003, in connect_check_health
+    sock = self._connect()
+           ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1515, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1499, in _connect
+    sock.connect(socket_address)
+TimeoutError: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/app/app.py", line 41, in hello
+    redis.rpush('votes', data)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 3151, in rpush
+    return self.execute_command("RPUSH", name, *values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 716, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 722, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 236, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 3041, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 976, in connect
+    self.retry.call_with_retry(
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 132, in call_with_retry
+    raise error
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 120, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 977, in <lambda>
+    lambda: self.connect_check_health(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1014, in connect_check_health
+    raise e
+redis.exceptions.TimeoutError: Timeout connecting to server
+[2026-05-30 23:41:48 +0000] [15] [ERROR] Exception on / [POST]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1003, in connect_check_health
+    sock = self._connect()
+           ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1515, in _connect
+    raise err
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1499, in _connect
+    sock.connect(socket_address)
+TimeoutError: timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/app/app.py", line 41, in hello
+    redis.rpush('votes', data)
+  File "/usr/local/lib/python3.11/site-packages/redis/commands/core.py", line 3151, in rpush
+    return self.execute_command("RPUSH", name, *values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 716, in execute_command
+    return self._execute_command(*args, **options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/client.py", line 722, in _execute_command
+    conn = self.connection or pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/utils.py", line 236, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 3041, in get_connection
+    connection.connect()
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 976, in connect
+    self.retry.call_with_retry(
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 132, in call_with_retry
+    raise error
+  File "/usr/local/lib/python3.11/site-packages/redis/retry.py", line 120, in call_with_retry
+    return do()
+           ^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 977, in <lambda>
+    lambda: self.connect_check_health(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/redis/connection.py", line 1014, in connect_check_health
+    raise e
+redis.exceptions.TimeoutError: Timeout connecting to server
+85.247.146.215 - - [30/May/2026:23:41:48 +0000] "POST / HTTP/1.1" 500 265 "http://44.214.137.40:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0"
+
+
+ubuntu@ip-10-0-1-222:~$ docker inspect f00bef0826e0 | grep -i redis
+                "REDIS_HOST=10.0.0.29",
+                "REDIS_PORT=6379",
+
+so it is defined in the container, sg then ?
+
+docker logs of posgres container. SG is correct, but docker run did not have port specified
+
+PostgreSQL Database directory appears to contain a database; Skipping initialization
+
+2026-05-31 00:09:58.310 UTC [1] LOG:  starting PostgreSQL 15.18 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-05-31 00:09:58.311 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-05-31 00:09:58.311 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-05-31 00:09:58.317 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-05-31 00:09:58.325 UTC [28] LOG:  database system was interrupted; last known up at 2026-05-31 00:06:06 UTC
+2026-05-31 00:09:58.336 UTC [28] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-05-31 00:09:58.340 UTC [28] LOG:  redo starts at 0/1549058
+2026-05-31 00:09:58.340 UTC [28] LOG:  invalid record length at 0/1549090: wanted 24, got 0
+2026-05-31 00:09:58.340 UTC [28] LOG:  redo done at 0/1549058 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-05-31 00:09:58.347 UTC [26] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-05-31 00:09:58.364 UTC [26] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.002 s, total=0.021 s; sync files=2, longest=0.002 s, average=0.001 s; distance=0 kB, estimate=0 kB
+2026-05-31 00:09:58.371 UTC [1] LOG:  database system is ready to accept connections

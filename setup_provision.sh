@@ -8,15 +8,20 @@ set -euo pipefail
 
 ## for host files- get the ips and key from tf output to build the host file
 ## 
-## for playbook: i need docker, git in all, + db:posgres , app: redis ? , front end: nginx ?
+## for playbook: i need docker, git in all
 ### send al this to bastion and run it from there 
 
 #### TO DO LIST
-############## add to the machines sgs allow ssh from bastion, bastion can not connect to any machine ====>> adicionado como ingress aos sg o sg_bastion voltar a correr
-############## provision in bastion to install ansible so that when exporting in this script, it just runs ansible
+##############  when running at first, a host key check up is asked, even though the .cfg disregards it
+##############  as of now its using the same key for all hosts, add a way to create a different key per host to increase security
+##############  add a secrets.yaml file as a vars file to put all username/passwords/... to increase security
+##############  add a step to kill bastion after a healthcheck step 
+##############  apply cloudwatch
+##############  multi az scheme set up
 ###-----------------------------------------------------------------------------
 export PATH=/usr/local/bin:/usr/bin:/snap/bin:$PATH
 
+#for debugging, will be deleted upon final take
 echo "=== DEBUG AMBIENTE ==="
 echo "PWD: $(pwd)"
 echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-não definido}"
@@ -29,8 +34,6 @@ echo "======================"
 # 1. Provision with Terraform
 cd ~/Project1_singleAZ/terraform
 
-
-## TO DO: find a way to not log directly in terminal, but save it in a file of sorts 
 terraform init -upgrade
 terraform apply -auto-approve
 TF_OUTPUT_JSON=$(terraform output -json)          # capture outputs 
@@ -42,9 +45,8 @@ BASTION_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.bastion_ip.value')
 FRONTEND_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.front_ip_priv.value')
 APP_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.app_ip.value')
 DATABASE_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.db_ip.value')
-#KEY=$(echo "$TF_OUTPUT_JSON" | jq -r '.key_path.value')
 KEY="$HOME/joaquim-labsg-key.pem"
-##KEY_PATH=$(echo "$TF_OUTPUT_JSON"     | jq -r '.key_path.value')
+
 
 echo "=== DEBUG TF OUTPUTS ==="
 echo "BASTION_IP:  ${BASTION_IP}"
@@ -59,7 +61,7 @@ cd ..
 #### creating host files 
 
 INV_FILE=$(mktemp)
-CMD_SSH_BASTION="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"
+CMD_SSH_BASTION="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"  #add this in the inventory file to decrease repetition
 cat > "$INV_FILE" <<EOF
 
 [frontend]
@@ -97,21 +99,21 @@ become_method = sudo
 become_user = root
 EOF
 
-# running with local agent ssh-agent
+# running with local agent ssh-agent for proxyjump
 eval $(ssh-agent -s)
 ssh-add "$KEY"
 
-echo "=== INV_FILE (${INV_FILE}) ==="
-cat "$INV_FILE"
-echo ""
-echo "=== ANSIBLE_CFG (${ANSIBLE_CFG}) ==="
-cat "$ANSIBLE_CFG"
-echo ""
 
 ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/bootstrap.yml
 
-#for manual debugging purposes at first try
+#for manual debugging purposes at first try decoment the next line. Bastion can keep this key because it will eventually be deleted
 #scp -i ~/joaquim-labsg-key.pem ~/joaquim-labsg-key.pem ubuntu@${BASTION_IP}:/home/ubuntu
+
+cat > ansible/compose/vars.yml << EOF
+database_ip: ${DATABASE_IP}
+app_ip: ${APP_IP}
+frontend_ip: ${FRONTEND_IP}
+EOF
 
 echo "=== Setting up container for db ==="
 ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/docker_db.yml

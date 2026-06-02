@@ -3,10 +3,12 @@
 - name: Docker in front
   hosts: frontend
   become: true
+  vars_files:
+    - compose/vars.yml    
   tasks:
     - name: Copying compose file 
-      copy: 
-        src: compose/docker-compose.front.yml
+      ansible.builtin.template: 
+        src: compose/docker-compose.front.yml.j2
         dest: /home/ubuntu/docker-compose.front.yml
         owner: ubuntu 
         group: ubuntu

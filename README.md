@@ -1,9 +1,29 @@
-WIP 
+Goal:
 
-playbook ping connection failed.
-   -> Review bastion connection sg to all ec2. Why success in db, but failure in app and frontend
+Automation, modularity
 
-fatal: [app]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Connection timed out during banner exchange\r\nConnection to UNKNOWN port 65535 timed out", "unreachable": true}
-fatal: [frontend]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Connection timed out during banner exchange\r\nConnection to UNKNOWN port 65535 timed out", "unreachable": true}
-ok: [db]
-Fatal: [db]: FAILED! => {"changed": false, "msg": "Failed to lock apt for exclusive operation: Failed to lock directory /var/lib/apt/lists/: E:Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)"}
+Create a tfvars file in folder, aka terraform/ with the followinf format
+
+myIP     = < insert your IP>
+key_name = < insert key name>
+
+Where:
+   myIP is the ip of your network should be of type /32.
+   key_name is an already existing key of zone us-east-1. This key is just to access the bastion host which will be deleted automatically after the application is running.
+
+If debugging needed, please de-comment the line in the setup_provision.sh script in line xxxxxxxx.
+
+Then, simply run:
+   1) in provision_s3 folder, the main.tf to provision an S3 + DynamoDB to save state of infra (for first time only)
+   2) setup_provision.sh in your local machine
+
+(if names needed to be changed please account for the changes latter on)
+
+
+(
+   local dependencies needed:
+      aws account
+      aws cli installed
+      terraform installed   
+   )
+

@@ -258,7 +258,7 @@ resource "aws_security_group" "sg_joaquim_bck_db" {
 
 #--------------------------------------------------------------------------------------
 ## machines TEMPLATE
-resource "aws_instance" "testing-front-joaquim" {
+resource "aws_instance" "frontend-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
   key_name               = var.key_name # defined in tfvars
@@ -272,7 +272,7 @@ resource "aws_instance" "testing-front-joaquim" {
 }
 
 
-resource "aws_instance" "testing-bck-joaquim-app" {
+resource "aws_instance" "back-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
   key_name               = var.key_name # defined in tfvars
@@ -285,7 +285,7 @@ resource "aws_instance" "testing-bck-joaquim-app" {
 }
 
 
-resource "aws_instance" "testing-bck-joaquim-db" {
+resource "aws_instance" "Posgres-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
   key_name               = var.key_name # defined in tfvars
@@ -323,3 +323,4 @@ resource "aws_instance" "bastion" {
     Name = "joaquim-P1-bastion"
   }
 }
+

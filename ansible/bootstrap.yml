@@ -1,6 +1,6 @@
 ---
 #### apt update 
-- name: waiting for all instances to be update
+- name: waiting for all instances to be available
   hosts: all
   gather_facts: false
   tasks:

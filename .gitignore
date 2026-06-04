@@ -19,15 +19,12 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# Editor/OS (opcional)
-.vscode/
-.idea/
-*.swp
-.DS_Store
-Thumbs.db
 
 .aws/*
 terraform/aws/"
 
-aws/*
-awscliv2.zip
+terraform/aws
+terraform/awscliv2.zip
+
+#secrets
+ansible/secrets.yml

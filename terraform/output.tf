@@ -15,7 +15,7 @@ output "subnet_public" {
 
 output "front_ip" {
   description = "Public IP addresses of the EC2 instances"
-  value       = aws_instance.testing-front-joaquim.public_ip
+  value       = aws_instance.frontend-joaquim.public_ip
 }
 
 
@@ -28,18 +28,23 @@ output "bastion_ip" {
 
 output "app_ip" {
   description = "Public IP addresses of the EC2 instances"
-  value       = aws_instance.testing-bck-joaquim-app.private_ip
+  value       = aws_instance.back-joaquim.private_ip
 }
 
 
 output "db_ip" {
   description = "Public IP addresses of the EC2 instances"
-  value       = aws_instance.testing-bck-joaquim-db.private_ip
+  value       = aws_instance.Posgres-joaquim.private_ip
 }
 
 output "front_ip_priv" {
   description = "Public IP addresses of the EC2 instances"
-  value       = aws_instance.testing-front-joaquim.private_ip
+  value       = aws_instance.frontend-joaquim.private_ip
+}
+
+output "front_ip_pub" {
+  description = "Public IP addresses of the EC2 instances"
+  value       = aws_instance.frontend-joaquim.public_ip
 }
 
 output "key_path" {

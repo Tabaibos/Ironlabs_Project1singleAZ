@@ -15,7 +15,14 @@ If debugging needed, please de-comment the line in the setup_provision.sh script
 
 Then, simply run:
    1) in provision_s3 folder, the main.tf to provision an S3 + DynamoDB to save state of infra (for first time only)
-   2) setup_provision.sh in your local machine
+   2) inside ansible folder, create secrets.yml file where pg_user and pg_password are defined for creation/connection to Posgres DB
+         example:
+
+         pg_user: </insertUsername>
+         pg_password: </insertPassword>
+
+
+   3) setup_provision.sh in your local machine
 
 (if names needed to be changed please account for the changes latter on)
 

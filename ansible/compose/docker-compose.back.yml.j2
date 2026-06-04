@@ -13,7 +13,7 @@ services:
       - "8080:80"
     environment:
       - DB_HOST={{ database_ip }}
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - DB_USERNAME={{ pg_user }}
+      - DB_PASSWORD={{ pg_password }}
       - DB_NAME=postgres
       - REDIS_HOST={{ app_ip }}

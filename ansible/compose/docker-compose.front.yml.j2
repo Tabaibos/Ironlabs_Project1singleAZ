@@ -17,9 +17,9 @@ services:
       - "8081:80"
     environment:
       - PG_HOST={{ database_ip }}
-      - PORT=80 
+      - PORT=80  
       - PG_PORT=5432 
-      - PG_USER=postgres 
-      - PG_PASSWORD=postgres 
+      - PG_USER={{ pg_user }}
+      - PG_PASSWORD={{ pg_password }}
       - PG_DATABASE=postgres
 

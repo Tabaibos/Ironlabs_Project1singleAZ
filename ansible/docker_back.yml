@@ -3,7 +3,8 @@
   hosts: app
   become: true
   vars_files:
-    - compose/vars.yml  
+    - compose/vars.yml
+    - secrets.yml      
   tasks:
     - name: Copying compose file 
       ansible.builtin.template:

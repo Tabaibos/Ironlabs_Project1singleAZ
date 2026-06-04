@@ -2,7 +2,9 @@
 - name: Configure Database
   hosts: db
   become: yes
-
+  vars_files:
+    - secrets.yml   
+  
   tasks:
 
    - name: Remove existing db container if exists
@@ -18,8 +20,8 @@
       cmd: >         
           docker run -d
           --name db
-          -e POSTGRES_USER=postgres
-          -e POSTGRES_PASSWORD=postgres
+          -e POSTGRES_USER={{ pg_user }}
+          -e POSTGRES_PASSWORD={{ pg_password }}
           -v db-data:/var/lib/postgresql/data
           -p 5432:5432
           postgres:15-alpine

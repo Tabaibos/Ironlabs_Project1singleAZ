@@ -1,0 +1,45 @@
+---
+- name: Install CloudWatch Agent
+  hosts: all
+  become: yes  # Use sudo privileges
+
+  tasks:
+    - name: Download CloudWatch Agent installer   
+      get_url:
+        url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+        dest: ./amazon-cloudwatch-agent.deb
+        mode: '0644'
+
+    - name: Install CloudWatch Agent
+      shell: dpkg -i -E ./amazon-cloudwatch-agent.deb
+
+    - name: Copy config file
+      template:
+        src: monotoring_config.json
+        dest: /opt/aws/amazon-cloudwatch-agent/bin/monitoring_config.json
+        mode: '0644'
+
+    - name: Start CloudWatch agent
+      ansible.builtin.command: >
+        /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+        -a fetch-config -m ec2 -s
+        -c file:/opt/aws/amazon-cloudwatch-agent/bin/monitoring_config.json
+
+    - name: Add cwagent to docker group  ## location of docker logs is not acessible, workaroud add the agent to the docker group
+      ansible.builtin.user:
+        name: cwagent
+        groups: docker
+        append: true
+
+    - name: Restart CloudWatch agent to apply group change
+      ansible.builtin.command: >
+        /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+        -a fetch-config -m ec2 -s
+        -c file:/opt/aws/amazon-cloudwatch-agent/bin/monitoring_config.json
+
+
+# used 2 articles for inspiration
+# cloudwatch by ansible https://medium.com/@cabhi318/ansible-for-installing-cloudwatch-agent-a17a3b394ae7
+#cloudwatch by terraform https://medium.com/@ernestgibbsiii/deploying-aws-cloudwatch-agents-using-terraform-d3e8677cf414
+
+# same logic, create agent (IAM role), deploy agent configuration via ansible 

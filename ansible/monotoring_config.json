@@ -1,0 +1,67 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "cwagent",
+    "region": "us-east-1"
+  },
+  "metrics": {
+    "namespace": "CWAgent",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}",
+      "InstanceType": "${aws:InstanceType}",
+      "ImageId": "${aws:ImageId}"
+    },
+    "metrics_collected": {
+      "cpu": {
+        "measurement": [
+          "cpu_usage_idle",
+          "cpu_usage_iowait",
+          "cpu_usage_user",
+          "cpu_usage_system"
+        ]
+      },
+      "mem": {
+        "measurement": [
+          "mem_available_percent",
+          "mem_used_percent"
+        ]
+      },
+      "disk": {
+        "measurement": [
+          "disk_inodes_free",
+          "disk_used_percent"
+        ],
+        "drop_device": true
+      },
+      "net": {
+        "measurement": [
+          "net_bytes_recv",
+          "net_bytes_sent"
+        ]
+      },
+      "swap": {
+        "measurement": ["swap_used_percent"]
+      },
+      "processes": {
+        "measurement": [
+          "processes_running",
+          "processes_total"
+        ]
+      }
+    }
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/lib/docker/containers/*/*.log",
+            "log_group_name": "/project1/joaquim/{{ host_role }}",
+            "log_stream_name": "{instance_id}/{hostname}",
+            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+          }
+        ]
+      }
+    }
+  }
+}

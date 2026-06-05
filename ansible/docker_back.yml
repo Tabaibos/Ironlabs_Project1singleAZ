@@ -3,7 +3,7 @@
   hosts: app
   become: true
   vars_files:
-    - compose/vars.yml
+    - vars.yml
     - secrets.yml      
   tasks:
     - name: Copying compose file 

@@ -4,7 +4,7 @@
   hosts: frontend
   become: true
   vars_files:
-    - compose/vars.yml
+    - vars.yml
     - secrets.yml    
     
   tasks:

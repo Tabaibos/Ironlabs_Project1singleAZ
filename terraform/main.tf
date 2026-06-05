@@ -257,14 +257,14 @@ resource "aws_security_group" "sg_joaquim_bck_db" {
 }
 
 #--------------------------------------------------------------------------------------
-## machines TEMPLATE
+## hosts
 resource "aws_instance" "frontend-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
   key_name               = var.key_name # defined in tfvars
   vpc_security_group_ids = [aws_security_group.sg_joaquim_front.id]
   subnet_id              = aws_subnet.public_subnet-joaquim.id
-
+  iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name
   tags = {
     Name = "joaquim-front-P1"
   }
@@ -278,6 +278,7 @@ resource "aws_instance" "back-joaquim" {
   key_name               = var.key_name # defined in tfvars
   vpc_security_group_ids = [aws_security_group.sg_joaquim_bck_app.id]
   subnet_id              = aws_subnet.private_subnet-joaquim.id
+  iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name
 
   tags = {
     Name = "joaquim-bck-app-P1"
@@ -291,6 +292,7 @@ resource "aws_instance" "Posgres-joaquim" {
   key_name               = var.key_name # defined in tfvars
   vpc_security_group_ids = [aws_security_group.sg_joaquim_bck_db.id]
   subnet_id              = aws_subnet.private_subnet-joaquim.id
+  iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name
 
   tags = {
     Name = "joaquim-bck-db-P1"
@@ -303,6 +305,7 @@ resource "aws_instance" "bastion" {
   key_name               = var.key_name # defined in tfvars
   vpc_security_group_ids = [aws_security_group.sg_bastion.id]
   subnet_id              = aws_subnet.public_subnet-joaquim.id
+  iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name
 
   connection {
     type        = "ssh"

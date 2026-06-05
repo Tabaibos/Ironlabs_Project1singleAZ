@@ -41,20 +41,22 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent_policy_attachment" {
 
 #########Creating the CloudWatch Agent Configuration 
 
-data "template_file" "cloudwatch_agent_config" {
-  template = file("${path.module}/cloudwatch_agent_config.json.tpl")
+#data "template_file" "cloudwatch_agent_config" {
+#  template = file("${path.module}/cloudwatch_agent_config.json.tpl")
+#
+#  vars = {
+#    log_group_name = aws_cloudwatch_log_group.demo_log_group.name
+#  }
+#}
 
-  vars = {
-    log_group_name = aws_cloudwatch_log_group.demo_log_group.name
-  }
-}
+
+#resource "aws_ssm_parameter" "cloudwatch_agent_config" {
+#  name  = "/cloudwatch-agent/config"
+#  type  = "String"
+#  value = data.template_file.cloudwatch_agent_config.rendered
+#}
 
 
-resource "aws_ssm_parameter" "cloudwatch_agent_config" {
-  name  = "/cloudwatch-agent/config"
-  type  = "String"
-  value = data.template_file.cloudwatch_agent_config.rendered
-}
 
 resource "aws_iam_instance_profile" "cloudwatch_agent_profile" {
   name = "CloudWatchAgentProfile"

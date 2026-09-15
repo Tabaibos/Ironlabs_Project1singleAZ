@@ -5,7 +5,7 @@
 crash.log
 crash.*.log
 
-# Variáveis potencialmente sensíveis
+# Sensitive variables
 *.tfvars
 *.tfvars.json
 

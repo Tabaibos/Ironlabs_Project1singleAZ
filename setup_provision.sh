@@ -1,42 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-############################################################################################
-#inspiration from the RNCP lab w7d3
-#dont want to run the same commands over and over 
-# Plan: run the ansible playbook in the bastion 
+# version 1.0.15
+# author: Joaquim Almeida 
 
-## for host files- get the ips and key from tf output to build the host file
-## 
-## for playbook: i need docker, git in all
-### send al this to bastion and run it from there 
-
-#### TO DO LIST
-##############  when running at first, a host key check up is asked, even though the .cfg disregards it
-##############  as of now its using the same key for all hosts, add a way to create a different key per host to increase security
-##############  apply cloudwatch
-##############  multi az scheme set up
-###-----------------------------------------------------------------------------
 export PATH=/usr/local/bin:/usr/bin:/snap/bin:$PATH
 
-#for debugging, will be deleted upon final take
-#echo "=== DEBUG AMBIENTE ==="
-#echo "PWD: $(pwd)"
-#echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-não definido}"
-#echo "AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-não definido}"
-#echo "PATH: $PATH"
-#which terraform
-#which aws
-#aws sts get-caller-identity
-#echo "======================"
-# 1. Provision with Terraform
+
+# Provision with Terraform
 
 cd ~/Project1_singleAZ/terraform
 
 terraform init -upgrade
 terraform apply -auto-approve
 TF_OUTPUT_JSON=$(terraform output -json)          # capture outputs 
-#outputs that needs to catch ips + key 
+
 
 echo "---------Terraform finished : Infra created ---------------------------"
 
@@ -47,25 +25,18 @@ DATABASE_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.db_ip.value')
 KEY="$HOME/joaquim-labsg-key.pem"
 WEBSITE=$(echo "$TF_OUTPUT_JSON"   | jq -r '.front_ip_pub.value')
 
-#echo "=== DEBUG TF OUTPUTS ==="
-#echo "BASTION_IP:  ${BASTION_IP}"
-#echo "FRONTEND_IP: ${FRONTEND_IP}"
-#echo "BACKEND_IP:  ${APP_IP}"
-#echo "DATABASE_IP: ${DATABASE_IP}"
-#echo "========================"
 cd ..
 
 echo "  INFRASTRUCTURE CREATED ..... Starting up "
 
 ## Build a One-Shot Inventory File
-#### creating host files 
 
 INV_FILE=$(mktemp)
-CMD_SSH_BASTION="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"  #add this in the inventory file to decrease repetition
+CMD_SSH_BASTION="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}" 
 cat > "$INV_FILE" <<EOF
 
 [frontend]
-frontend  ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}  StrictHostKeyChecking=no 
+front ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}  StrictHostKeyChecking=no 
 
 [backend]
 app ansible_host=${APP_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}  StrictHostKeyChecking=no 
@@ -104,6 +75,9 @@ EOF
 # running with local agent ssh-agent for proxyjump. Removes the need to copy the key into bastion
 eval $(ssh-agent -s)
 ssh-add "$KEY"
+ssh-add "$FRONTEND_KEY"
+ssh-add "$BACKEND_KEY"
+ssh-add "$DATABASE_KEY"
 
 
 ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/bootstrap.yml
@@ -114,7 +88,7 @@ app_ip: ${APP_IP}
 frontend_ip: ${FRONTEND_IP}
 EOF
 
-export ANSIBLE_HOST_KEY_CHECKING=False  # WIP just to make sure that does not request host key caching. It was asking in the first playbook runned      
+export ANSIBLE_HOST_KEY_CHECKING=False       
 
 echo "=== Setting up container for db ==="
 ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/docker_db.yml
@@ -132,11 +106,9 @@ ANSIBLE_CONFIG="$ANSIBLE_CFG" ansible-playbook -i "$INV_FILE" ansible/monotoring
 #for manual debugging purposes at first try decoment the next line. Bastion can keep this key because it will eventually be deleted
 #scp -i ~/joaquim-labsg-key.pem ~/joaquim-labsg-key.pem ubuntu@${BASTION_IP}:/home/ubuntu
 
-## if need be, to debugg, de comment the next lines 
+## if need be, to debugg, comment the next lines 
 cd ~/Project1_singleAZ/terraform
 terraform destroy -target=aws_instance.bastion -auto-approve
-
-
 
 
 echo " VOTE: Click on this link  http://${WEBSITE}:8080/"

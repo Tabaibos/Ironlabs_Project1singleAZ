@@ -261,7 +261,7 @@ resource "aws_security_group" "sg_joaquim_bck_db" {
 resource "aws_instance" "frontend-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
-  key_name               = var.key_name # defined in tfvars
+  key_name               = aws_key_pair.frontend.key_name
   vpc_security_group_ids = [aws_security_group.sg_joaquim_front.id]
   subnet_id              = aws_subnet.public_subnet-joaquim.id
   iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name
@@ -275,7 +275,7 @@ resource "aws_instance" "frontend-joaquim" {
 resource "aws_instance" "back-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
-  key_name               = var.key_name # defined in tfvars
+  key_name               = aws_key_pair.backend.key_name
   vpc_security_group_ids = [aws_security_group.sg_joaquim_bck_app.id]
   subnet_id              = aws_subnet.private_subnet-joaquim.id
   iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name
@@ -289,7 +289,7 @@ resource "aws_instance" "back-joaquim" {
 resource "aws_instance" "Posgres-joaquim" {
   ami                    = var.ami-image
   instance_type          = var.instance_type
-  key_name               = var.key_name # defined in tfvars
+  key_name               = aws_key_pair.database.key_name
   vpc_security_group_ids = [aws_security_group.sg_joaquim_bck_db.id]
   subnet_id              = aws_subnet.private_subnet-joaquim.id
   iam_instance_profile = aws_iam_instance_profile.cloudwatch_agent_profile.name

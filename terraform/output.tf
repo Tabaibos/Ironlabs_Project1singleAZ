@@ -51,14 +51,14 @@ output "key_path" {
   value = "~/${var.key_name}.pem"
 }
 
-#output "frontend_key_path" {
-#  value = local_sensitive_file.frontend_key.filename
-#}
+output "frontend_key_path" {
+  value = local_sensitive_file.frontend_key.filename
+}
 
-#output "backend_key_path" {
-#  value = local_sensitive_file.backend_key.filename
-#}
+output "backend_key_path" {
+  value = local_sensitive_file.backend_key.filename
+}
 
-#output "database_key_path" {
-#  value = local_sensitive_file.database_key.filename
-#}
+output "database_key_path" {
+  value = local_sensitive_file.database_key.filename
+}

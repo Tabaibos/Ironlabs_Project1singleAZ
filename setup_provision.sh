@@ -24,6 +24,9 @@ APP_IP=$(echo "$TF_OUTPUT_JSON"   | jq -r '.app_ip.value')
 DATABASE_IP=$(echo "$TF_OUTPUT_JSON"  | jq -r '.db_ip.value')
 KEY="$HOME/joaquim-labsg-key.pem"
 WEBSITE=$(echo "$TF_OUTPUT_JSON"   | jq -r '.front_ip_pub.value')
+FRONTEND_KEY=$(echo "$TF_OUTPUT_JSON" | jq -r '.frontend_key_path.value')
+BACKEND_KEY=$(echo "$TF_OUTPUT_JSON"  | jq -r '.backend_key_path.value')
+DATABASE_KEY=$(echo "$TF_OUTPUT_JSON" | jq -r '.database_key_path.value')
 
 cd ..
 
@@ -36,13 +39,13 @@ CMD_SSH_BASTION="ssh -i ${KEY} -W %h:%p -q ubuntu@${BASTION_IP}"
 cat > "$INV_FILE" <<EOF
 
 [frontend]
-front ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}  StrictHostKeyChecking=no 
+front ansible_host=${FRONTEND_IP} ansible_user=ubuntu ansible_private_key_file=${FRONTEND_KEY}  StrictHostKeyChecking=no 
 
 [backend]
-app ansible_host=${APP_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}  StrictHostKeyChecking=no 
+app ansible_host=${APP_IP} ansible_user=ubuntu ansible_private_key_file=${BACKEND_KEY}  StrictHostKeyChecking=no 
 
 [database]
-db ansible_host=${DATABASE_IP} ansible_user=ubuntu ansible_private_key_file=${KEY}  StrictHostKeyChecking=no 
+db ansible_host=${DATABASE_IP} ansible_user=ubuntu ansible_private_key_file=${DATABASE_KEY}  StrictHostKeyChecking=no 
 
 [frontend:vars]
 host_role=frontend
